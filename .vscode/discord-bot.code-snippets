@@ -1,0 +1,26 @@
+{
+	"Create command": {
+		"scope": "javascript,typescript",
+		"prefix": "command structure",
+		"body": [
+			"import { Client, Message, RichEmbed } from \"discord.js\";",
+			"import { Command, CommandInfo } from \"../types\";",
+			"require(\"dotenv\").config();\n",
+			"export default class $1Command implements Command {",
+			"  async run(client: Client, message: Message) {\n  $0",
+			"  }\n",
+			"  info(): CommandInfo {",
+			"    return {",
+			"      title: \"$2\",",
+			"      guildOnly: $3,",
+			"      arguments: [{",
+			"        name: \"Bet\",",
+			"        key: \"amount\",",
+			"        type: \"number\",",
+			"      }]",
+			"    }",
+			"  };",
+			"}"
+		]
+	}
+}
