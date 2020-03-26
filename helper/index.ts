@@ -1,17 +1,30 @@
 import { readdirSync } from 'fs'
-import type {
-  Command,
-  Commands,
-  ProcessedMessage,
-  ArgumentType,
-  Argument
-} from '../types'
-
+import { Commands, ProcessedMessage, Argument, ValidationArgs } from '../types'
 
 require('dotenv').config()
-const PREFIX = process.env.PREFIX || '!'
 
-const debug = require('debug')('helper')
+const PREFIX = process.env.PREFIX || '!'
+const TYPE_VALIDATOR = {
+  number: (argument: string, optional?: boolean) => {
+    if (!isNaN(+argument)) {
+      return +argument
+    } else if (optional) {
+      return
+    } else {
+      throw new Error()
+    }
+  },
+  user: (argument: string, optional?: boolean) => {
+    if (argument.startsWith('<@') && argument.endsWith('>')) {
+      return argument.slice(2, -1)
+    } else if (optional) {
+      return
+    } else {
+      throw new Error()
+    }
+  },
+  string: (argument: string, _optional?: boolean) => argument
+}
 
 /**
  * This function searches for command files, with the ending .ts or .js
@@ -27,12 +40,9 @@ export function findCommandsIn(directory: string): Commands {
     const fileName = file.split('.')[0]
     const commandFile = require('@commands/' + fileName)
 
-    if (!commandFile.default) {
-      return debug('Wrong file format on ' + fileName)
-    }
-    commands[PREFIX + fileName] = <Command>new commandFile.default()
+    commands[PREFIX + fileName] = new commandFile.default()
   }
-  debug(commands)
+
   return commands
 }
 
@@ -54,42 +64,16 @@ export function validateProcessedMessage(
   args: string[] = [],
   types: Argument[] | undefined = []
 ) {
-  return args.map((argument, index) => {
-    try {
-      return validateArgumentByType(argument, types[index].type)
-    } catch (err) {
-      if (!types[index].optional) {
-        throw err
-      }
-    }
+  return args.map((arg, index) => {
+    const { type, optional } = types[index]
+    return validateByType({ arg, type, optional })
   })
 }
 
-export function validateArgumentByType(
-  argument: string,
-  type: ArgumentType
-): any {
-  const argumentProcesses = {
-    number: (argument: string) => {
-      if (isNaN(+argument)) {
-        throw new Error()
-      } else {
-        return +argument
-      }
-    },
-    user: (argument: string) => {
-      if (argument.startsWith('<@') && argument.endsWith('>')) {
-        return argument.slice(2, -1)
-      } else {
-        throw new Error()
-      }
-    },
-    string: (argument: string) => argument
-  }
-
+export function validateByType({ arg, type, optional }: ValidationArgs): any {
   try {
-    return argumentProcesses[type](argument)
+    return TYPE_VALIDATOR[type](arg, optional)
   } catch {
-    throw new Error(`"${argument}" is not of type "${type}"`)
+    throw new Error(`"${arg}" is not of type "${type}"`)
   }
 }

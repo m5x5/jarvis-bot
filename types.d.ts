@@ -32,3 +32,9 @@ export interface ProcessedMessage {
 }
 
 type ArgumentType = 'string' | 'number' | 'user'
+
+type ValidationArgs = {
+  arg: string
+  type: ArgumentType
+  optional: boolean | undefined
+}

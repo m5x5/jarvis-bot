@@ -45,7 +45,7 @@ export default class FiftyThree implements Command {
 
   info(): CommandInfo {
     return {
-      title: '53 Game',
+      title: '50 Game',
       guildOnly: true,
       arguments: [{ type: 'number', optional: false }]
     }
